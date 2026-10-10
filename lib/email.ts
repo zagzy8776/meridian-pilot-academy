@@ -8,7 +8,6 @@ const apiKey = process.env.RESEND_API_KEY ?? '';
 const from =
   process.env.EMAIL_FROM ?? 'Meridian Aviation Academy <onboarding@resend.dev>';
 const adminNotify = process.env.ADMIN_NOTIFY_EMAIL ?? '';
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export const emailEnabled = Boolean(apiKey);
 
@@ -115,5 +114,3 @@ export function interviewConfirmedEmail(name: string, whenLabel: string, panel: 
     ),
   };
 }
-
-export { appUrl };

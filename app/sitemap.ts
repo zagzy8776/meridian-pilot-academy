@@ -1,5 +1,7 @@
+import { appUrl } from '@/lib/config';
+
 export default function sitemap() {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const base = appUrl();
   const now = new Date();
   const routes = [
     { path: '/', priority: 1.0, changeFrequency: 'weekly' },

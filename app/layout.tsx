@@ -1,9 +1,10 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { BRAND } from '@/lib/brand';
+import { appUrl } from '@/lib/config';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(appUrl()),
   title: {
     default: `${BRAND.name} | Elite Flight Crew Training & Recruitment`,
     template: `%s | ${BRAND.name}`,

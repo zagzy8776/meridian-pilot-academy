@@ -5,6 +5,15 @@ export const STRIPE_MODE = process.env.STRIPE_MODE ?? 'mock';
 export const MOCK_WEBHOOK_SECRET = process.env.MOCK_WEBHOOK_SECRET ?? 'dev-mock-secret';
 export const ADMIN_TOKEN = process.env.ADMIN_TOKEN ?? '';
 
+// Resolve the public site URL used in metadata, sitemap, robots and emails.
+// An env var that is present but blank must NOT win over the default, otherwise
+// `new URL('')` throws ERR_INVALID_URL and crashes the build during page-data
+// collection (Next.js evaluates metadataBase at build time).
+export function appUrl(): string {
+  const raw = (process.env.NEXT_PUBLIC_APP_URL ?? '').trim();
+  return (raw || 'http://localhost:3000').replace(/\/+$/, '');
+}
+
 export function feeDisclosure() {
   return {
     amountCents: COMPLIANCE_FEE_CENTS,
