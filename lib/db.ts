@@ -8,37 +8,44 @@ import { createClient, type Client } from '@libsql/client';
 const url = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || '';
 const authToken = process.env.TURSO_AUTH_TOKEN || undefined;
 
-// Validate the URL before handing it to libSQL. `createClient` calls `new URL()`
-// internally, so a malformed value (e.g. a truncated dashboard string still
-// containing a "…" ellipsis, or a copy/paste with the wrong scheme) would throw
-// ERR_INVALID_URL during Next.js page-data collection and fail the entire build.
-// We'd rather log loudly and fall back to the no-database path.
-function isValidDbUrl(value: string): boolean {
-  if (!value) return false;
+// `createClient` calls `new URL()` internally and throws ERR_INVALID_URL on a
+// malformed value (e.g. a truncated dashboard string still containing a "…"
+// ellipsis, or a copy/paste with the wrong scheme). Because Next.js evaluates
+// route modules during page-data collection, that throw fails the whole build.
+//
+// Partial pre-validation is NOT enough: `new URL()` and libSQL's own parser
+// disagree about some inputs (a raw "…" is accepted by new URL() but rejected
+// by libSQL). So we let createClient attempt the connection inside a try/catch
+// — the only check guaranteed to match libSQL's real behaviour — and fall back
+// to the no-database path on any failure.
+function tryCreateClient(): Client | null {
+  if (!url) {
+    console.warn('[db] TURSO_DATABASE_URL is not set. Pages will use fallback data until configured.');
+    return null;
+  }
   try {
-    const parsed = new URL(value);
-    return parsed.protocol === 'libsql:' || parsed.protocol === 'http:' ||
-      parsed.protocol === 'https:' || parsed.protocol === 'ws:' || parsed.protocol === 'wss:';
-  } catch {
-    return false;
+    const created = createClient({ url, authToken });
+    if (!/^(libsql|http|https|ws|wss):/i.test(url.trim())) {
+      console.error(
+        '[db] TURSO_DATABASE_URL should start with libsql:// (remote Turso DB) or file: ' +
+          '(local SQLite). The configured value starts with ' +
+          `${JSON.stringify(url.slice(0, 12))}…. Attempting to use it anyway.`,
+      );
+    }
+    return created;
+  } catch (e: any) {
+    console.error(
+      '[db] TURSO_DATABASE_URL is not a valid URL, so the database is disabled. ' +
+        'Copy the exact value from the Turso dashboard — it should look like ' +
+        'libsql://<database>-<org>.turso.io (note the libsql:// scheme, and make sure ' +
+        `the string is not truncated with a "…"). Error: ${e?.code ?? e?.message ?? e}.`,
+    );
+    return null;
   }
 }
 
-const dbEnabled = isValidDbUrl(url);
-if (url && !dbEnabled) {
-  console.error(
-    '[db] TURSO_DATABASE_URL is not a valid URL, so the database is disabled. ' +
-      'Copy the exact value from the Turso dashboard — it should look like ' +
-      'libsql://<database>-<org>.turso.io (note the libsql:// scheme, and make sure ' +
-      'the string is not truncated with a "…"). Using fallback data until fixed.',
-  );
-}
-if (!url) {
-  console.warn('[db] TURSO_DATABASE_URL is not set. Pages will use fallback data until configured.');
-}
-
-export const client: Client | null = dbEnabled ? createClient({ url, authToken }) : null;
-export const hasDb = dbEnabled;
+export const client: Client | null = tryCreateClient();
+export const hasDb = client !== null;
 
 // Normalise a returned row object: libSQL already gives us plain objects, so we
 // only need to strip BigInt values (which JSON.stringify rejects) and coerce
@@ -60,7 +67,7 @@ function normaliseRow(row: Record<string, any>): Record<string, any> {
  * It returns an ARRAY of row objects (not a ResultSet) so every existing call
  * site keeps working unchanged after the move from Postgres to libSQL.
  */
-export const sql: any = dbEnabled
+export const sql: any = hasDb
   ? (strings: TemplateStringsArray, ...values: any[]) => {
       const text = strings.reduce(
         (acc, part, i) => acc + part + (i < values.length ? '?' : ''),
