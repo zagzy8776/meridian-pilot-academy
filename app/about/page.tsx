@@ -1,4 +1,5 @@
 import Nav from '@/app/Nav';
+import SiteFooter from '@/components/SiteFooter';
 import { getFaqs } from '@/lib/queries';
 
 export const revalidate = 300;
@@ -103,12 +104,7 @@ export default async function AboutPage() {
           </div>
         </section>
       </main>
-      <footer className="footer">
-        <div className="wrap">
-          <span>© 2026 Meridian Executive Search, Aviation Academy</span>
-          <span><a href="/apply">Apply Now</a>, <a href="/programs">Programs</a></span>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

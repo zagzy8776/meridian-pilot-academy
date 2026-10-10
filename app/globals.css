@@ -203,6 +203,41 @@ details p{margin:.9rem 0 0;color:var(--muted)}
 .statusline{margin-top:1.1rem;font-size:.9rem;color:var(--muted)}
 .wizard h2{font-size:1.35rem}
 
+/* ------------------------- Wizard step icons ------------------------- */
+.progress li{display:flex;flex-direction:column;align-items:center;gap:.35rem}
+.stepicon{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(123,139,160,.16);color:inherit;transition:background .3s,color .3s}
+.progress li.on .stepicon{background:rgba(232,201,106,.22);color:var(--gold-l)}
+.progress li.done .stepicon{background:rgba(200,150,46,.3);color:var(--navy)}
+
+/* --------------------------- Admin dashboard --------------------------- */
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1.6rem 0 1.4rem}
+.stat-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.2rem 1.3rem;display:flex;flex-direction:column;gap:.35rem}
+.stat-num{font-size:2rem;font-weight:800;line-height:1}
+.stat-label{font-size:.78rem;color:#9fb2c6;letter-spacing:.02em}
+.admin-panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:1.6rem 1.6rem;margin-top:1.4rem}
+.admin-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.1rem}
+.admin-panel h2{color:#fff;font-size:1.2rem;margin-bottom:.3rem}
+.admin-panel .sub{color:#8ea3ba}
+.fee-editor{background:rgba(0,0,0,.2);border-radius:12px;padding:1.1rem 1.2rem}
+.fee-editor label{color:#cfdcea}
+.fee-row{display:flex;gap:.7rem;align-items:flex-end}
+.fee-row input{flex:0 0 180px;background:#0b2038;border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:9px;padding:.6rem .8rem;font-size:1rem}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.32rem .7rem;white-space:nowrap}
+.paychip{display:inline-block;font-size:.7rem;font-weight:700;text-transform:capitalize;background:rgba(232,201,106,.16);color:#e8c96a;border-radius:6px;padding:.18rem .5rem}
+.actions-cell{position:relative;min-width:150px}
+.btn-sm{padding:.42rem .8rem;font-size:.8rem;border-radius:8px}
+.slot-picker{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:#0b2038;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:.6rem;display:flex;flex-direction:column;gap:.4rem;min-width:260px;box-shadow:0 20px 40px -20px rgba(0,0,0,.8)}
+.slot-option{display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:.55rem .7rem;color:#cfdcea;cursor:pointer;transition:background .2s,border-color .2s}
+.slot-option:hover{background:rgba(232,201,106,.14);border-color:rgba(232,201,106,.5)}
+.slot-option span{font-size:.75rem;color:#8ea3ba}
+.admin-panel table th,.admin-panel table td{color:#cfdcea}
+.admin-panel table th{color:#8ea3ba;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+
+/* --------------------------- Candidate status --------------------------- */
+.status-hero{display:flex;gap:1rem;align-items:flex-start;background:#fff;border:1px solid #e3ebf3;border-left:4px solid var(--gold);border-radius:14px;padding:1.8rem 2rem;box-shadow:var(--shadow)}
+.status-hero h2{margin-bottom:.4rem;font-size:1.3rem}
+.status-dot{width:14px;height:14px;border-radius:50%;margin-top:.5rem;flex:0 0 auto}
+
 
 /* ---------------------------- Panel ---------------------------- */
 .panel{background:linear-gradient(140deg,var(--navy),var(--navy-2));color:#cfdcea;border-radius:var(--radius);padding:2.4rem;text-align:center;margin-top:2.5rem;box-shadow:var(--shadow-lg)}
@@ -218,10 +253,47 @@ tbody tr:nth-child(even){background:#f6f9fc}
 tbody tr:hover{background:#eef4fb}
 
 /* ---------------------------- Footer ---------------------------- */
-.footer{background:var(--deep);color:#8fa6bf;padding:2.4rem 0;font-size:.93rem;border-top:3px solid var(--gold)}
-.footer .wrap{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center}
+.footer{background:var(--deep);color:#8fa6bf;padding:2.4rem 0 1.4rem;font-size:.93rem;border-top:3px solid var(--gold)}
 .footer a{color:#cfdcea;text-decoration:none}
 .footer a:hover{color:var(--gold-l)}
+.footer-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:1.6rem;align-items:start}
+.footer-brand{display:block;color:#fff;font-weight:800;letter-spacing:.02em;font-size:1.05rem;margin-bottom:.5rem}
+.footer-line{margin:.15rem 0;color:#8fa6bf}
+.footer-links{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;padding:0;margin:0}
+.footer-links a{font-size:.9rem}
+.footer-bottom{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center;margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid rgba(255,255,255,.09);font-size:.86rem}
+
+/* ---------------------------- Legal & trust pages ---------------------------- */
+.legal-hero{background-image:none!important;background:var(--deep)!important}
+.legal-updated{font-size:.85rem;opacity:.8}
+.legal-body h2{color:var(--deep);margin:1.8rem 0 .6rem;font-size:1.22rem}
+.legal-body h2:first-of-type{margin-top:.4rem}
+.legal-body p,.legal-body li{line-height:1.65;color:#31465c}
+.legal-body ul{padding-left:1.2rem;display:grid;gap:.4rem;margin:.4rem 0}
+.legal-body a{color:var(--gold-d,#a9781f);text-decoration:underline}
+.legal-rule{border:0;border-top:1px solid var(--line,#dfe7ef);margin:2rem 0 1rem}
+.error-hero,.success-hero{padding:4rem 0 3rem}
+.success-steps{list-style:none;counter-reset:s;padding:0;margin:1.6rem auto 1.4rem;max-width:520px;display:grid;gap:.7rem;text-align:left}
+.success-steps li{counter-increment:s;position:relative;padding-left:2.4rem;color:#31465c}
+.success-steps li::before{content:counter(s);position:absolute;left:0;top:-.1rem;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--deep);color:#e8c96a;display:grid;place-items:center;font-size:.8rem;font-weight:700}
+
+/* ---------------------------- Team page & admin team editor ---------------------------- */
+.team-grid{gap:1.6rem}
+.team-card{text-align:center;color:#10202f}
+.team-photo{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;display:block;border:3px solid var(--gold)}
+.team-photo-fallback{display:grid;place-items:center;background:var(--deep);color:#e8c96a;font-size:2.4rem;font-weight:800}
+.team-role{color:var(--gold-d,#a9781f);font-weight:700;font-size:.92rem;margin:.15rem 0 .6rem;letter-spacing:.02em}
+.admin-topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-top:1.6rem}
+.team-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.9rem;margin-bottom:1.4rem}
+.team-admin-card{background:rgba(0,0,0,.2);border-radius:12px;padding:.9rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.team-admin-photo{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:0 0 auto;font-size:1.2rem}
+.team-admin-meta{display:flex;flex-direction:column;min-width:0;flex:1 1 auto}
+.team-admin-meta .sub{color:#8ea3ba;font-size:.82rem}
+.team-admin-actions{display:flex;gap:.4rem;flex-wrap:wrap}
+.team-admin-form{background:rgba(0,0,0,.2);border-radius:12px;padding:1.1rem 1.2rem}
+.team-admin-form h3{color:#fff;margin-bottom:.8rem;font-size:1rem}
+.team-admin-form label{color:#cfdcea}
+.team-admin-preview{width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);margin:.2rem 0 .8rem}
 
 /* ---------------------------- Motion ---------------------------- */
 @keyframes heroZoom{from{transform:scale(1.05)}to{transform:scale(1.14)}}
@@ -250,10 +322,17 @@ tbody tr:hover{background:#eef4fb}
   .grid4{grid-template-columns:1fr 1fr}
   .row2{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr}
+  .admin-stats{grid-template-columns:1fr 1fr}
+  .fee-row{flex-direction:column;align-items:stretch}
+  .fee-row input{flex:1 1 auto}
+  .slot-picker{right:auto;left:0;min-width:0;width:100%}
   .progress li{font-size:.72rem;padding:.6rem .5rem}
   .step{padding:1.35rem 1.25rem 1.35rem 3.85rem}
   .step::before{left:1.1rem;font-size:1.3rem}
   .footer .wrap{flex-direction:column;align-items:flex-start}
+  .footer-grid{grid-template-columns:1fr;gap:1.1rem}
+  .footer-bottom{flex-direction:column;align-items:flex-start}
+  .admin-topbar{flex-direction:column}
   .prog-body{padding:1.4rem}
 }
 /* Small phones: nav, type scale and the partner logo wall */

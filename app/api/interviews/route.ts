@@ -15,8 +15,9 @@ export async function POST(req: Request) {
       const s: any = await sql`select taken_by from slots where id=${slotId}`;
       if (!s?.length || s[0].taken_by) return NextResponse.json({ error: 'Slot no longer available' }, { status: 409 });
       await sql`update slots set taken_by=${candidateId} where id=${slotId}`;
-      await sql`insert into interviews (candidate_id, slot_id) values (${candidateId}, ${slotId}) on conflict (slot_id) do nothing`;
-      await sql`update candidates set status='scheduled', updated_at=now() where id=${candidateId}`;
+      const interviewId = `int_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      await sql`insert into interviews (id, candidate_id, slot_id) values (${interviewId}, ${candidateId}, ${slotId}) on conflict (slot_id) do nothing`;
+      await sql`update candidates set status='scheduled', updated_at=datetime('now') where id=${candidateId}`;
     } catch { return NextResponse.json({ error: 'Booking failed' }, { status: 500 }); }
   } else {
     const verified: Set<string> = (globalThis as any).__meridianVerified ?? new Set();

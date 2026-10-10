@@ -1,54 +1,35 @@
 'use client';
 import { useEffect, useState } from 'react';
 type Slot = { id: string; starts_at: string; ends_at: string; partner: string };
-export default function ScheduleClient({ candidate, initialSlots }: { candidate: string; initialSlots: Slot[] }) {
-  const [slots, setSlots] = useState<Slot[]>(initialSlots);
-  const [verified, setVerified] = useState<boolean | null>(initialSlots.length ? true : null);
-  const [msg, setMsg] = useState('');
-  const [busy, setBusy] = useState('');
+const COPY: Record<string, { title: string; body: string; tone: string }> = {
+  pending_payment: { title: 'Complete your application', body: 'Your interview scheduling unlocks once your compliance fee is paid and our team approves your file.', tone: '#8a5b00' },
+  payment_received: { title: 'Payment received — under review', body: "Thank you. Your payment has landed and your application is with our recruitment team. You'll be emailed as soon as it's approved and your interview slot is confirmed.", tone: '#8a5b00' },
+  verified: { title: 'Approved — scheduling your interview', body: 'Your application has been approved. Our team is confirming your interview slot now and will email you the calendar invitation and NDA pack.', tone: '#0a6b46' },
+  scheduled: { title: 'Interview confirmed', body: 'Interview confirmed. Calendar invitation and NDA pack will follow by email.', tone: '#1b4fa0' },
+  unknown: { title: 'Checking your status…', body: 'One moment while we retrieve your application.', tone: '#5b6b7d' },
+};
+export default function ScheduleClient({ candidate }: { candidate: string; initialSlots: Slot[] }) {
+  const [status, setStatus] = useState<string>('unknown');
+  const [interview, setInterview] = useState<{ when: string; panel: string } | null>(null);
   useEffect(() => {
-    if (!candidate) { setVerified(false); return; }
+    if (!candidate) { setStatus('unknown'); return; }
     fetch(`/api/me/status?candidateId=${encodeURIComponent(candidate)}`)
       .then((r) => r.json())
-      .then((d) => {
-        const ok = d.status === 'verified' || d.status === 'scheduled';
-        setVerified(ok);
-        if (!ok) setMsg(`Scheduling is locked (status: "${d.status}"). Complete the compliance webhook first.`);
-      })
-      .catch(() => setVerified(false));
+      .then((d) => { setStatus(d.status ?? 'unknown'); setInterview(d.interview ?? null); })
+      .catch(() => setStatus('unknown'));
   }, [candidate]);
-  async function book(id: string) {
-    setBusy(id); setMsg('');
-    const res = await fetch('/api/interviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ candidateId: candidate, slotId: id }) });
-    const data = await res.json();
-    if (!res.ok) { setMsg(data.error ?? 'Booking failed'); setBusy(''); return; }
-    setSlots((s) => s.filter((x) => x.id !== id));
-    setMsg('Interview confirmed. Calendar invitation and NDA pack will follow by email.');
-    setBusy('');
-  }
-  if (verified === false) {
-    return (
-      <div className="card center">
-        <h2>Scheduling locked: verification required</h2>
-        <p className="sub">{msg || 'Only candidates with a successful compliance webhook can access scheduling.'}</p>
-        <a href="/apply" className="btn btn-dark">Complete Verification</a>
-      </div>
-    );
-  }
+  const c = COPY[status] ?? COPY.unknown;
   return (
     <div>
-      {msg && <p role="status" className="okmsg">{msg}</p>}
-      <div className="grid2">
-        {slots.map((s) => (
-          <article key={s.id} className="card">
-            <p className="eyebrow" style={{ marginBottom: '.3rem' }}>{s.partner}</p>
-            <h3>{new Date(s.starts_at).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</h3>
-            <p className="sub">30 minutes, confidential video, NDA covered</p>
-            <button disabled={!candidate || busy === s.id} onClick={() => book(s.id)} className="btn btn-dark" style={{ width: '100%' }}>{busy === s.id ? 'Booking…' : 'Reserve This Slot'}</button>
-          </article>
-        ))}
+      <div className="status-hero" style={{ borderColor: c.tone }}>
+        <span className="status-dot" style={{ background: c.tone }} />
+        <div>
+          <h2 style={{ color: c.tone }}>{c.title}</h2>
+          <p className="sub">{c.body}</p>
+          {interview && <p style={{ marginTop: '.6rem' }}><strong>{interview.when}</strong> · {interview.panel}</p>}
+        </div>
       </div>
-      {!slots.length && <p className="sub">No open slots. New partner availability releases every Monday.</p>}
+      {!candidate && <p className="sub" style={{ marginTop: '1rem' }}>Add ?candidate=YOUR_ID to view your application status.</p>}
     </div>
   );
 }

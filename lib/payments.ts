@@ -12,14 +12,14 @@ function mockId(prefix: string) {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-// Mock Stripe provider. Clearly labelled DEMO, no real charge.
-// Swap with Stripe live SDK by implementing the same interface.
-export async function createComplianceIntent(candidateId: string): Promise<PaymentIntent> {
+// Payment provider adapter. Currently a mock; swap in the live Stripe SDK by
+// implementing the same interface — no wizard or admin change required.
+export async function createComplianceIntent(candidateId: string, amountCents: number = COMPLIANCE_FEE_CENTS): Promise<PaymentIntent> {
   const intentId = mockId('pi_mock');
   return {
     intentId,
     clientSecret: `${intentId}_secret_mock`,
-    amountCents: COMPLIANCE_FEE_CENTS,
+    amountCents,
     currency: 'usd',
     mode: STRIPE_MODE,
   };

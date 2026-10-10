@@ -1,5 +1,6 @@
 import { sql, hasDb } from '@/lib/db';
 import Nav from './Nav';
+import SiteFooter from '@/components/SiteFooter';
 import { fallbackPartners, processSteps, programMedia, defaultProgramMedia } from '@/lib/content';
 import { getPrograms, priceRange } from '@/lib/queries';
 export const revalidate = 300;
@@ -187,12 +188,7 @@ export default async function Home() {
           </div>
         </section>
       </main>
-      <footer className="footer">
-        <div className="wrap">
-          <span>© 2026 Meridian Executive Search, Aviation Academy</span>
-          <span><a href="/admin">Recruiter Sign-in</a>, <a href="/schedule">Scheduling</a></span>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

@@ -11,6 +11,6 @@ export function feeDisclosure() {
     label: COMPLIANCE_FEE_LABEL,
     purpose: 'Third-party identity, right-to-work and background screening initiated only after payment confirmation.',
     payerMode: FEE_PAYER_MODE,
-    refundNote: 'Refunds are handled per engagement letter. In mock mode no real charge occurs.',
+    refundNote: 'Refundable before screening begins. See our Refund Policy for full details.',
   };
 }

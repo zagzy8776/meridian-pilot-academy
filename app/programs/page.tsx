@@ -1,4 +1,5 @@
 import Nav from '@/app/Nav';
+import SiteFooter from '@/components/SiteFooter';
 import { getPrograms, priceRange } from '@/lib/queries';
 import { programMedia, defaultProgramMedia } from '@/lib/content';
 
@@ -89,12 +90,7 @@ export default async function ProgramsPage() {
           </div>
         </section>
       </main>
-      <footer className="footer">
-        <div className="wrap">
-          <span>© 2026 Meridian Executive Search, Aviation Academy</span>
-          <span><a href="/about">About</a>, <a href="/apply">Apply Now</a></span>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

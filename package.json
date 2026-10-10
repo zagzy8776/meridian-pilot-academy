@@ -1,5 +1,5 @@
 {
-  "name": "meridian-executive-search",
+  "name": "meridian-aviation-academy",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,10 +8,11 @@
     "db:setup": "node --env-file=.env.local scripts/setup.mjs"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.0",
+    "@libsql/client": "^0.18.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^6.32.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

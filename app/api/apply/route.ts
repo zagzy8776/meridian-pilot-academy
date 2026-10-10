@@ -13,6 +13,6 @@ export async function POST(req: Request) {
       values (${name.slice(0, 120)},${email.slice(0, 200)},${String(b?.phone ?? '').slice(0, 40) || null},${String(b?.program ?? '').slice(0, 40) || null},${String(b?.start ?? '').slice(0, 40) || null},${String(b?.notes ?? '').slice(0, 2000) || null})`;
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ error: 'Database not connected. Add DATABASE_URL and run db:setup.' }, { status: 500 });
+    return NextResponse.json({ error: 'Database not connected. Add TURSO_DATABASE_URL and run db:setup.' }, { status: 500 });
   }
 }

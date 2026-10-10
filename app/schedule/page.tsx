@@ -7,16 +7,16 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   let slots: any[] = [];
   if (hasDb) {
     try {
-      slots = await sql`select id::text as id, starts_at, ends_at, partner from slots where taken_by is null order by starts_at limit 12`;
+      slots = await sql`select id, starts_at, ends_at, partner from slots where taken_by is null order by starts_at limit 12`;
     } catch { slots = []; }
   }
   return (
     <>
       <Nav />
       <main className="alt"><div className="wrap">
-        <span className="eyebrow">Interview Scheduling: Verified Only</span>
-        <h1>Reserve your partner interview</h1>
-        <p className="sub">Access is granted only after the compliance webhook succeeds. {sp?.candidate ? '' : 'Add ?candidate=YOUR_ID after verification.'}</p>
+        <span className="eyebrow">Interview Status</span>
+        <h1>Your application &amp; interview</h1>
+        <p className="sub">Track your compliance approval and interview. {sp?.candidate ? 'Your interview is confirmed by our recruitment team.' : 'Add ?candidate=YOUR_ID to view your status.'}</p>
         <div style={{ marginTop: '2rem' }}>
           <ScheduleClient candidate={sp?.candidate ?? ''} initialSlots={slots} />
         </div>

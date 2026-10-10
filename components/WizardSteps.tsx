@@ -48,8 +48,8 @@ export function StepDocs({ f, set }: { f: WizForm; set: S }) {
   return (
     <section aria-label="Document vault">
       <h2>Step 2: Document vault</h2>
-      <p className="sub">Encrypted at rest. PDF or DOC up to 10MB. Only metadata stored in Postgres.</p>
-      <label className="drop" htmlFor="resumeFile"><strong>{f.resumeName ? `Selected: ${f.resumeName}` : 'Drop your CV / resume here or click to browse'}</strong><br /><span className="sub">Secure upload simulation. File stays in your browser.</span>
+      <p className="sub">Refer your CV or resume and any credentials. PDF or DOC up to 10MB. Our team reviews these securely before your interview.</p>
+      <label className="drop" htmlFor="resumeFile"><strong>{f.resumeName ? `Selected: ${f.resumeName}` : 'Drop your CV / resume here or click to browse'}</strong><br /><span className="sub">Select the file you want to send. Our recruitment team will request and review it securely during the approval stage.</span>
         <input id="resumeFile" type="file" accept=".pdf,.doc,.docx" hidden onChange={(e) => {
           const file = e.target.files?.[0];
           if (!file) return;
@@ -61,19 +61,18 @@ export function StepDocs({ f, set }: { f: WizForm; set: S }) {
     </section>
   );
 }
-export function StepGate({ f, set, status, intentId }: { f: WizForm; set: S; status: string; intentId: string | null }) {
+export function StepGate({ f, set, status, intentId, feeLabel }: { f: WizForm; set: S; status: string; intentId: string | null; feeLabel?: string }) {
   return (
     <section aria-label="Compliance gate">
       <h2>Step 3: Compliance gate</h2>
-      <p className="sub">Stays <strong>Pending</strong> until the mock webhook confirms. Scheduling unlocks after.</p>
+      <p className="sub">Pay the compliance fee and our recruitment team reviews your file. You'll be emailed once it's approved.</p>
       <label className="consent"><input type="checkbox" checked={f.backgroundConsent} onChange={(e) => set('backgroundConsent', e.target.checked)} /> I consent to third-party identity and background screening.</label>
       <label className="consent"><input type="checkbox" checked={f.referenceConsent} onChange={(e) => set('referenceConsent', e.target.checked)} /> I consent to confidential reference outreach upon shortlisting.</label>
-      <label className="consent"><input type="checkbox" checked={f.retentionConsent} onChange={(e) => set('retentionConsent', e.target.checked)} /> I consent to 24-month secure retention under GDPR.</label>
+      <label className="consent"><input type="checkbox" checked={f.retentionConsent} onChange={(e) => set('retentionConsent', e.target.checked)} /> I consent to 24-month secure retention of my data, as described in the Privacy Policy.</label>
       <div className="fee">
-        <span className="demo">Demo, no real charge</span>
-        <h3>Third Party Compliance Fee: $49.00</h3>
-        <p>Payer mode: deferred (configurable). Receipt on webhook success.</p>
-        <p style={{ margin: 0 }}>State: <strong style={{ color: '#e8c96a' }}>{status}</strong>{intentId ? ` (${intentId})` : ''}</p>
+        <h3>Third Party Compliance Fee: {feeLabel ?? '$49.00'}</h3>
+        <p>This fee covers third-party identity, right-to-work and background screening. It is refundable before screening begins — see our <a href="/refund-policy">Refund Policy</a>. A receipt is issued on payment.</p>
+        {status && <p style={{ margin: 0 }}>State: <strong style={{ color: '#e8c96a' }}>{status}</strong>{intentId ? ` (${intentId})` : ''}</p>}
       </div>
     </section>
   );

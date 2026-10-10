@@ -1,4 +1,5 @@
 import Nav from '@/app/Nav';
+import SiteFooter from '@/components/SiteFooter';
 import { getTrainingSteps, getRates, rateRange } from '@/lib/queries';
 
 export const revalidate = 300;
@@ -164,12 +165,7 @@ export default async function ProgramDetailsPage() {
           </div>
         </section>
       </main>
-      <footer className="footer">
-        <div className="wrap">
-          <span>© 2026 Meridian Executive Search, Aviation Academy</span>
-          <span><a href="/programs">Programs</a>, <a href="/about">About</a></span>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

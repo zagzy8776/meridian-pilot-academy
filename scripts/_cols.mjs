@@ -1,11 +1,14 @@
-import { neon } from '@neondatabase/serverless';
-const sql = neon(process.env.DATABASE_URL);
-const rows = await sql`
-  select table_name, column_name, is_nullable, data_type
-  from information_schema.columns
-  where table_schema = 'public'
-    and table_name in ('programs', 'rates', 'faqs', 'training_steps')
-  order by table_name, ordinal_position`;
+import { createClient } from '@libsql/client';
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
+const { rows } = await client.execute(`
+  select name as table_name, type as data_type
+  from sqlite_master
+  where type = 'table'
+  order by name`);
 for (const c of rows) {
-  console.log(`${c.table_name}.${c.column_name} | ${c.data_type} | nullable=${c.is_nullable}`);
+  console.log(`${c.table_name} | ${c.data_type}`);
 }
+
