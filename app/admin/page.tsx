@@ -42,12 +42,13 @@ export default async function AdminPage() {
         order by c.created_at desc limit 200`;
     } catch {
       try {
-        // Simplified query if the joins aren't supported.
+        // Compatibility query for databases that have not received the newer
+        // interview columns yet. Correlated subqueries keep one row per candidate.
         rows = await sql`select c.id as id, c.full_name, c.email, c.phone, c.status, c.created_at,
-          j.title as job_title, p.status as pay_status, p.intent_id
-          from candidates c
-          left join jobs j on j.id = c.job_id
-          left join payments p on p.candidate_id = c.id
+          j.title as job_title,
+          (select p.status from payments p where p.candidate_id = c.id order by p.created_at desc limit 1) as pay_status,
+          (select p.intent_id from payments p where p.candidate_id = c.id order by p.created_at desc limit 1) as intent_id
+          from candidates c left join jobs j on j.id = c.job_id
           order by c.created_at desc limit 200`;
       } catch { rows = []; }
     }
