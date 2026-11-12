@@ -30,6 +30,12 @@ create table if not exists candidates (
   phone text,
   profile text not null default '{}',
   status text not null default 'draft',
+  consent_identity integer not null default 0,
+  consent_reference integer not null default 0,
+  consent_retention integer not null default 0,
+  consent_at text,
+  consent_version text,
+  ip_hash text,
   created_at text not null default (datetime('now')),
   updated_at text not null default (datetime('now'))
 );
@@ -45,6 +51,7 @@ create table if not exists documents (
   size_bytes integer not null,
   storage_key text not null,
   sha256 text,
+  storage_status text not null default 'recorded',
   created_at text not null default (datetime('now'))
 );
 
@@ -58,6 +65,8 @@ create table if not exists payments (
   status text not null default 'requires_payment',
   payer_mode text not null default 'deferred',
   receipt_url text,
+  fee_version text,
+  checkout_url text,
   created_at text not null default (datetime('now')),
   updated_at text not null default (datetime('now'))
 );
@@ -68,6 +77,7 @@ create table if not exists webhook_events (
   event_id text unique not null,
   event_type text not null,
   payload text not null,
+  status text not null default 'received',
   received_at text not null default (datetime('now'))
 );
 
@@ -145,6 +155,18 @@ create table if not exists settings (
   value text not null,
   updated_at text not null default (datetime('now'))
 );
+
+create table if not exists fee_versions (
+  id text primary key,
+  amount_cents integer not null,
+  currency text not null,
+  version text not null unique,
+  actor text,
+  effective_from text not null,
+  created_at text not null default (datetime('now'))
+);
+
+create unique index if not exists webhook_events_event_id on webhook_events(event_id);
 
 -- Team members shown on the public /team page and managed from /admin.
 create table if not exists team_members (
