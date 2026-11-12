@@ -22,6 +22,9 @@ export async function POST(req: Request) {
       if (before[0].status === 'verified' || before[0].status === 'scheduled') {
         return NextResponse.json({ ok: true, status: before[0].status, already: true });
       }
+      if (before[0].status !== 'payment_received') {
+        return NextResponse.json({ error: `Only paid candidates can be approved (current status: "${before[0].status}").` }, { status: 409 });
+      }
       name = before[0].full_name ?? '';
       email = before[0].email ?? '';
       await sql`update candidates set status='verified', updated_at=datetime('now') where id=${candidateId}`;
@@ -33,6 +36,9 @@ export async function POST(req: Request) {
     const cands: any[] = (globalThis as any).__meridianCandidates ?? [];
     const c = cands.find((x) => x.id === candidateId);
     if (!c) return NextResponse.json({ error: 'Candidate not found' }, { status: 404 });
+    if (c.status !== 'payment_received') {
+      return NextResponse.json({ error: `Only paid candidates can be approved (current status: "${c.status}").` }, { status: 409 });
+    }
     c.status = 'verified';
     name = c.profile?.fullName ?? '';
     email = c.profile?.email ?? '';
