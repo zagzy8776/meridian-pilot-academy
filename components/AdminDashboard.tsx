@@ -84,7 +84,10 @@ export default function AdminDashboard({ candidates, slots, feeCents, team }: Pr
       const res = await fetch('/api/fee', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountCents: cents }) });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error ?? 'Could not save');
-      setFeeMsg(`Saved — new applicants will now be charged $${(d.amountCents / 100).toFixed(2)}.`);
+      // Checkout uses a versioned constant (lib/config.ts), not this value.
+      // The admin save is an audit entry; the price itself changes only with a
+      // code deploy + FEE_VERSION bump, so a paid row always traces to a price.
+      setFeeMsg(`Recorded for audit. Live checkout price remains ${d.label ?? '£39.00'} until FEE_VERSION is bumped and redeployed.`);
     } catch (e: any) { setFeeMsg(e.message); }
   }
   return (
@@ -109,15 +112,15 @@ export default function AdminDashboard({ candidates, slots, feeCents, team }: Pr
         <div className="admin-panel-head">
           <div>
             <h2>Third-party compliance fee</h2>
-            <p className="sub">Changes apply to all new applicants immediately. Existing payments are unaffected.</p>
+            <p className="sub">Audit entry only. The checkout price is a versioned constant in <code>lib/config.ts</code>; changing it requires a deploy and a <code>FEE_VERSION</code> bump so paid rows remain traceable to a price.</p>
           </div>
         </div>
         <div className="fee-editor">
           <div className="field" style={{ marginBottom: 0 }}>
-            <label htmlFor="fee">Fee amount (USD)</label>
+            <label htmlFor="fee">Fee amount (GBP)</label>
             <div className="fee-row">
               <input id="fee" type="number" min="0" step="0.01" value={fee} onChange={(e) => setFee(e.target.value)} />
-              <button type="button" className="btn btn-dark" onClick={saveFee}>Save fee</button>
+              <button type="button" className="btn btn-dark" onClick={saveFee}>Record fee</button>
             </div>
           </div>
           {feeMsg && <p className="sub" style={{ marginTop: '.6rem' }}>{feeMsg}</p>}

@@ -1,57 +1,52 @@
 import { NextResponse } from 'next/server';
 import { sql, hasDb } from '@/lib/db';
-import { labelFor } from '@/lib/settings';
+import { STRIPE_MODE } from '@/lib/config';
 import { sendMail, notifyAdmin, paymentReceivedEmail } from '@/lib/email';
+import { formatMoney } from '@/lib/money';
 
 export async function POST(req: Request) {
+  // In live mode only the Stripe webhook is allowed to say "paid". Reject the
+  // mock confirmation endpoint so a scripted client cannot self-mark as paid.
+  if (STRIPE_MODE === 'live') {
+    return NextResponse.json({ error: 'In live mode the webhook confirms payment' }, { status: 409 });
+  }
   const b = await req.json().catch(() => null);
   const intentId = String(b?.intentId ?? '');
   if (!intentId) return NextResponse.json({ error: 'intentId required' }, { status: 400 });
-  await new Promise((r) => setTimeout(r, 1200)); // processor latency
 
-  const store: Map<string, any> = (globalThis as any).__meridianIntents ?? new Map();
-  const rec = store.get(intentId);
-  if (rec) rec.status = 'succeeded';
+  await new Promise((r) => setTimeout(r, 600));
 
-  let candidateId = rec?.candidateId ?? '';
-  let name = '';
-  let email = '';
-  let amountCents = 0;
-
-  if (hasDb) {
-    try {
-      const rows: any = await sql`update payments set status='succeeded', updated_at=datetime('now') where intent_id=${intentId} returning candidate_id, amount_cents`;
-      const cid = rows?.[0]?.candidate_id;
-      amountCents = Number(rows?.[0]?.amount_cents ?? 0);
-      if (cid) {
-        candidateId = String(cid);
-        // Mark payment received — approval is a deliberate admin action, so we
-        // do NOT flip the candidate straight to 'verified' here.
-        const c: any = await sql`update candidates set status='payment_received', updated_at=datetime('now') where id=${candidateId} returning full_name, email`;
-        name = c?.[0]?.full_name ?? '';
-        email = c?.[0]?.email ?? '';
-      }
-    } catch (e) {
-      console.error('[payments:confirm] db update failed:', e);
+  if (!hasDb) {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Applications are temporarily closed' }, { status: 503 });
     }
-  } else {
     const cands: any[] = (globalThis as any).__meridianCandidates ?? [];
-    const c = cands.find((x) => x.id === candidateId);
-    if (c) { c.status = 'payment_received'; name = c.profile?.fullName ?? ''; email = c.profile?.email ?? ''; }
-    amountCents = Number(rec?.amountCents ?? 4900);
+    return NextResponse.json({ status: 'payment_received', candidateId: cands[0]?.id ?? '' });
   }
 
-  // Tell the applicant their payment landed and is awaiting review, and alert the recruiter.
+  const rows: any = await sql`update payments set status='succeeded', updated_at=datetime('now')
+    where intent_id=${intentId} and status <> 'succeeded'
+    returning candidate_id, amount_cents, currency`;
+  const r = rows?.[0];
+  if (!r) {
+    const existing: any = await sql`select candidate_id, amount_cents, currency, status from payments where intent_id=${intentId}`;
+    if (!existing?.[0]) return NextResponse.json({ error: 'Unknown intent' }, { status: 404 });
+    return NextResponse.json({ status: 'payment_received', candidateId: existing[0].candidate_id, alreadyPaid: true });
+  }
+
+  const c: any = await sql`update candidates set status='payment_received', updated_at=datetime('now')
+    where id=${r.candidate_id} and status='pending_payment' returning full_name, email`;
+
+  const name = c?.[0]?.full_name ?? '';
+  const email = c?.[0]?.email ?? '';
   if (email) {
-    const m = paymentReceivedEmail(name.split(' ')[0] || 'there', labelFor(amountCents));
-    sendMail({ to: email, subject: m.subject, html: m.html });
+    const m = paymentReceivedEmail(name.split(' ')[0] || 'there', formatMoney(r.amount_cents, r.currency));
+    await sendMail({ to: email, subject: m.subject, html: m.html });
   }
   await notifyAdmin(
-    'Payment received — awaiting your approval',
-    `<p><strong>${name || 'A candidate'}</strong> has paid the compliance fee (${labelFor(amountCents)}).</p>
-     <p>Their application is now <strong>awaiting approval</strong>. Approve from the dashboard to unlock scheduling.</p>
-     <p>Candidate ID: <code>${candidateId}</code></p>`,
+    'Payment received (mock) - awaiting approval',
+    `<p>Candidate <code>${r.candidate_id}</code> cleared the fee in test mode. Approve from the dashboard.</p>`,
   );
 
-  return NextResponse.json({ intentId, status: 'payment_received', candidateId });
+  return NextResponse.json({ intentId, status: 'payment_received', candidateId: r.candidate_id });
 }

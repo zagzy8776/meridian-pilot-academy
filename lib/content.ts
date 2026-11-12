@@ -1,8 +1,12 @@
+// Airline partners Meridian places graduates into. Rendered on the home page
+// as a text list under the partner wall. Regulator frameworks (EASA / FAA /
+// ICAO) are named in the section heading, not here.
 export const fallbackPartners = [
-  { id: 1, name: 'EASA' },
-  { id: 2, name: 'FAA' },
-  { id: 3, name: 'ICAO' },
-  { id: 4, name: 'IATA' },
+  { id: 1, name: 'British Airways', slug: 'british-airways' },
+  { id: 2, name: 'Virgin Atlantic', slug: 'virgin-atlantic' },
+  { id: 3, name: 'Air France', slug: 'air-france' },
+  { id: 4, name: 'Lufthansa', slug: 'lufthansa' },
+  { id: 5, name: 'KLM', slug: 'klm' },
 ];
 
 export type Program = {

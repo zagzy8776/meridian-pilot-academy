@@ -1,36 +1,82 @@
 import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
 import { sql, hasDb } from '@/lib/db';
-import { MOCK_WEBHOOK_SECRET } from '@/lib/config';
+import { sendMail, notifyAdmin, paymentReceivedEmail } from '@/lib/email';
+import { formatMoney } from '@/lib/money';
 
-// Provider webhook. Payment success alone never grants access — the candidate
-// is set to 'payment_received' and stays there until an admin approves them.
+export const runtime = 'nodejs'; // signature check needs the raw body + node crypto
+
+function stripeClient(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY!;
+  // No pinned apiVersion — use whatever the installed SDK ships with.
+  return new Stripe(key);
+}
+
 export async function POST(req: Request) {
-  const secret = req.headers.get('x-mock-webhook-secret');
-  if (secret !== MOCK_WEBHOOK_SECRET && secret !== 'dev-mock-secret') {
-    return NextResponse.json({ error: 'Invalid webhook secret' }, { status: 401 });
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!secret || !key) return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
+
+  const raw = await req.text();
+  const sig = req.headers.get('stripe-signature') ?? '';
+
+  let event: Stripe.Event;
+  try {
+    event = stripeClient().webhooks.constructEvent(raw, sig, secret);
+  } catch (e: any) {
+    return NextResponse.json({ error: `Bad signature: ${e.message}` }, { status: 400 });
   }
-  const b = await req.json().catch(() => null);
-  const intentId = String(b?.intentId ?? '');
-  if (!intentId) return NextResponse.json({ error: 'intentId required' }, { status: 400 });
-  const eventId = `evt_mock_${intentId}`;
-  if (hasDb) {
-    try {
-      const eventRowId = `whk_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-      await sql`insert into webhook_events (id, provider, event_id, event_type, payload)
-        values (${eventRowId}, 'mock-stripe', ${eventId}, 'payment_intent.succeeded', ${JSON.stringify({ intentId })})
-        on conflict (event_id) do nothing`;
-      const rows: any = await sql`update payments set status='succeeded', updated_at=datetime('now') where intent_id=${intentId} returning candidate_id`;
-      const cid = rows?.[0]?.candidate_id;
-      // Only mark payment received. Admin approval flips to 'verified'.
-      if (cid) await sql`update candidates set status='payment_received', updated_at=datetime('now') where id=${String(cid)} and status in ('pending_payment','payment_received')`;
-    } catch (e) { return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 }); }
-  } else {
-    const store: Map<string, any> = (globalThis as any).__meridianIntents ?? new Map();
-    const rec = store.get(intentId);
-    if (rec) rec.status = 'succeeded';
-    const cands: any[] = (globalThis as any).__meridianCandidates ?? [];
-    const c = cands.find((x) => x.id === rec?.candidateId);
-    if (c) c.status = 'payment_received';
+
+  if (!hasDb) return NextResponse.json({ received: true });
+
+  // Idempotency: Stripe retries. First writer wins, the rest no-op.
+  const seen: any = await sql`insert into webhook_events (id, provider, event_id, event_type, payload, status)
+    values (${`wh_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`}, 'stripe', ${event.id}, ${event.type}, ${raw.slice(0, 4000)}, 'processing')
+    on conflict (event_id) do nothing returning id`;
+  if (!seen?.length) return NextResponse.json({ received: true, duplicate: true });
+
+  if (event.type !== 'checkout.session.completed' && event.type !== 'checkout.session.async_payment_succeeded') {
+    await sql`update webhook_events set status='ignored' where event_id=${event.id}`;
+    return NextResponse.json({ received: true });
   }
-  return NextResponse.json({ ok: true, intentId, status: 'payment_received' });
+
+  const session = event.data.object as Stripe.Checkout.Session;
+  const candidateId = session.client_reference_id ?? session.metadata?.candidateId ?? '';
+  const intentId = session.id;
+
+  const pay: any = await sql`select id, amount_cents, currency from payments where intent_id = ${intentId}`;
+  const row = pay?.[0];
+  if (!row) {
+    await sql`update webhook_events set status='orphan' where event_id=${event.id}`;
+    return NextResponse.json({ received: true, orphan: true });
+  }
+
+  // Assert against what we asked for, not what arrived.
+  if (Number(session.amount_total) !== Number(row.amount_cents) || String(session.currency) !== String(row.currency)) {
+    await sql`update payments set status='amount_mismatch' where intent_id=${intentId}`;
+    await sql`update webhook_events set status='amount_mismatch' where event_id=${event.id}`;
+    await notifyAdmin(
+      'Amount mismatch on payment',
+      `<p>Expected ${formatMoney(row.amount_cents, row.currency)}, captured ${formatMoney(Number(session.amount_total), String(session.currency))}. Candidate <code>${candidateId}</code>.</p>`,
+    );
+    return NextResponse.json({ received: true, mismatch: true });
+  }
+
+  await sql`update payments set status='succeeded', updated_at=datetime('now') where intent_id=${intentId} and status <> 'succeeded'`;
+  const c: any = await sql`update candidates set status='payment_received', updated_at=datetime('now')
+    where id=${candidateId} and status='pending_payment' returning full_name, email`;
+  await sql`update webhook_events set status='done' where event_id=${event.id}`;
+
+  const name = c?.[0]?.full_name ?? '';
+  const email = c?.[0]?.email ?? '';
+  if (email) {
+    const m = paymentReceivedEmail(name.split(' ')[0] || 'there', formatMoney(row.amount_cents, row.currency));
+    await sendMail({ to: email, subject: m.subject, html: m.html });
+  }
+  await notifyAdmin(
+    'Payment received - awaiting approval',
+    `<p>Candidate <code>${candidateId}</code> cleared the fee. Approve from the dashboard.</p>`,
+  );
+
+  return NextResponse.json({ received: true });
 }

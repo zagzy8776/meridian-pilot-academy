@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getFee, setFee } from '@/lib/settings';
+import { currentFee, recordFeeVersion } from '@/lib/fee';
+import { STRIPE_MODE, feeDisclosure } from '@/lib/config';
 import { isAdmin } from '@/lib/auth';
 
-// GET  /api/fee — public: current third-party compliance fee (used by the wizard).
-// POST /api/fee — admin only: change the fee shown to all future applicants.
+// GET /api/fee — public: current third-party compliance fee (used by the wizard).
+// The value is a frozen constant so an admin edit mid-session cannot move the
+// price of an open funnel. POST writes an immutable audit row only.
 export async function GET() {
-  return NextResponse.json(await getFee());
+  const fee = currentFee();
+  return NextResponse.json({ ...fee, mode: STRIPE_MODE, disclosure: feeDisclosure() });
 }
 
 export async function POST(req: Request) {
@@ -15,5 +18,7 @@ export async function POST(req: Request) {
   if (!Number.isFinite(cents) || cents < 0 || cents > 1_000_000) {
     return NextResponse.json({ error: 'amountCents must be between 0 and 1,000,000' }, { status: 400 });
   }
-  return NextResponse.json(await setFee(cents));
+  // Audit only. Checkout keeps using the frozen constant.
+  await recordFeeVersion(cents, 'admin');
+  return NextResponse.json(currentFee());
 }

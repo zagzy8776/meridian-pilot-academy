@@ -48,9 +48,9 @@ export default async function Home() {
               <h2>At a glance</h2>
               <ul>
                 <li><span>Career tracks</span><b>{programs.length}</b></li>
-                <li><span>Partner airlines</span><b>40+</b></li>
+                <li><span>Airlines we place into</span><b>5</b></li>
                 <li><span>Safety framework</span><b>EASA / FAA / ICAO</b></li>
-                <li><span>Placement support</span><b>12 months</b></li>
+                <li><span>Screening turnaround</span><b>2–4 days</b></li>
               </ul>
             </aside>
           </div>
@@ -61,8 +61,8 @@ export default async function Home() {
           <div className="wrap">
             <div className="section-head center">
               <span className="eyebrow">Our Partners</span>
-              <h2>Trusted by Aviation Authorities Worldwide</h2>
-              <p>Our curriculum is aligned to the standards set by the world&apos;s leading aviation bodies.</p>
+              <h2>Aligned to regulator standards. Screening by a named partner.</h2>
+              <p>Curriculum mapped to EASA, FAA and ICAO frameworks — the authorities, not the airlines. Airlines are named below.</p>
             </div>
             <div className="grid4">
               {partners.map((p: any) => (
@@ -78,6 +78,10 @@ export default async function Home() {
                 </div>
               ))}
             </div>
+            <p className="sub center" style={{ marginTop: '1.25rem' }}>
+              Placement partners include <strong>British Airways</strong>, <strong>Virgin Atlantic</strong>,
+              <strong> Air France</strong>, <strong>Lufthansa</strong> and <strong>KLM</strong>.
+            </p>
           </div>
         </section>
 
@@ -149,9 +153,9 @@ export default async function Home() {
           <div className="wrap">
             <div className="statband">
               <div className="grid3">
-                <div className="stat"><b>40+</b><span>Partner airlines worldwide</span></div>
-                <div className="stat"><b>3</b><span>Career tracks to choose from</span></div>
-                <div className="stat"><b>97%</b><span>Graduate placement rate</span></div>
+                <div className="stat"><b>5</b><span>Airlines we place into</span></div>
+                <div className="stat"><b>3</b><span>Career tracks</span></div>
+                <div className="stat"><b>2–4 days</b><span>Screening turnaround</span></div>
               </div>
             </div>
           </div>

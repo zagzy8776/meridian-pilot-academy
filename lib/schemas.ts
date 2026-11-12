@@ -8,6 +8,10 @@ export const profileSchema = {
     if (!v.title || String(v.title).length < 2) issues.push({ message: 'Current title is required' });
     v.years = Number(v.years ?? 0);
     if (!['citizen', 'settled', 'visa', 'sponsorship-required'].includes(v.workAuth)) v.workAuth = 'citizen';
+    // Consent flags must be boolean true. Anything else fails validation.
+    for (const k of ['backgroundConsent', 'referenceConsent', 'retentionConsent']) {
+      v[k] = v[k] === true || v[k] === 'on';
+    }
     if (issues.length) return { success: false as const, error: { issues } };
     return { success: true as const, data: v };
   },

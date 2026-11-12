@@ -1,9 +1,20 @@
-export const COMPLIANCE_FEE_CENTS = 4900;
-export const COMPLIANCE_FEE_LABEL = '$49.00';
-export const FEE_PAYER_MODE = process.env.FEE_PAYER_MODE ?? 'deferred';
+// Fee is a versioned constant, NOT a live-read setting. Changing it means
+// bumping FEE_VERSION so a payment row can always be traced to a price.
+export const FEE_VERSION = 'gbp-39-v1';
+export const COMPLIANCE_FEE_CENTS = 3900;
+export const CURRENCY = 'gbp' as const;
+export const FEE_EFFECTIVE_FROM = '2026-11-01';
+
+// Who pays. 'deferred' is a lie at checkout time, so it is no longer the default.
+export const FEE_PAYER_MODE = process.env.FEE_PAYER_MODE ?? 'candidate';
+
 export const STRIPE_MODE = process.env.STRIPE_MODE ?? 'mock';
 export const MOCK_WEBHOOK_SECRET = process.env.MOCK_WEBHOOK_SECRET ?? 'dev-mock-secret';
 export const ADMIN_TOKEN = process.env.ADMIN_TOKEN ?? '';
+export const PRIVACY_VERSION = '2026-10-10';
+
+// Tolerated difference between what we asked for and what the processor captured.
+export const AMOUNT_TOLERANCE_CENTS = 0;
 
 // Resolve the public site URL used in metadata, sitemap, robots and emails.
 // An env var that is present but blank must NOT win over the default, otherwise
@@ -17,9 +28,12 @@ export function appUrl(): string {
 export function feeDisclosure() {
   return {
     amountCents: COMPLIANCE_FEE_CENTS,
-    label: COMPLIANCE_FEE_LABEL,
-    purpose: 'Third-party identity, right-to-work and background screening initiated only after payment confirmation.',
+    currency: CURRENCY,
+    feeVersion: FEE_VERSION,
+    purpose:
+      'Third-party identity, right-to-work and criminal-record screening, commissioned from our screening partner only after payment clears.',
     payerMode: FEE_PAYER_MODE,
-    refundNote: 'Refundable before screening begins. See our Refund Policy for full details.',
+    refundNote:
+      'Refundable in full until screening is commissioned. See the Refund Policy.',
   };
 }
