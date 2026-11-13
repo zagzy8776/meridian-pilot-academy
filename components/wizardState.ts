@@ -18,7 +18,7 @@ export function validateStep(f: WizForm, s: number): string[] {
     const e: string[] = [];
     if (f.fullName.trim().length < 2) e.push('Enter your full name.');
     if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) e.push('Enter a valid work email.');
-    if (f.title.trim().length < 2) e.push('Enter your current title.');
+    // title is optional — never block continue when the field is absent from an older deploy
     if (f.linkedin && !/^https?:\/\//.test(f.linkedin)) e.push('LinkedIn must start with http(s)://.');
     return e;
   }

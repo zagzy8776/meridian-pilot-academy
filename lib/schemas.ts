@@ -5,7 +5,8 @@ export const profileSchema = {
     const v: any = { ...(body ?? {}) };
     if (!v.fullName || String(v.fullName).length < 2) issues.push({ message: 'Full name is required' });
     if (!v.email || !/^\S+@\S+\.\S+$/.test(String(v.email))) issues.push({ message: 'Valid work email is required' });
-    if (!v.title || String(v.title).length < 2) issues.push({ message: 'Current title is required' });
+    // title is optional — stored in profile JSON when provided
+    v.title = v.title != null ? String(v.title) : '';
     v.years = Number(v.years ?? 0);
     if (!['citizen', 'settled', 'visa', 'sponsorship-required'].includes(v.workAuth)) v.workAuth = 'citizen';
     // Consent flags must be boolean true. Anything else fails validation.

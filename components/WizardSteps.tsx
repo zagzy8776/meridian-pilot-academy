@@ -12,9 +12,15 @@ export function StepProfile({ f, set, jobs }: { f: WizForm; set: S; jobs: { id: 
         <div className="field"><label htmlFor="fullName">Full name</label><input id="fullName" value={f.fullName} onChange={(e) => set('fullName', e.target.value)} autoComplete="name" /></div>
         <div className="field"><label htmlFor="email">Email</label><input id="email" type="email" value={f.email} onChange={(e) => set('email', e.target.value)} /></div>
       </div>
-      <div className="row2">
-        <div className="field"><label htmlFor="title">Current title</label><input id="title" value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. First Officer, Cabin Supervisor" autoComplete="organization-title" /></div>
-        <div className="field"><label htmlFor="linkedin">LinkedIn (optional)</label><input id="linkedin" type="url" value={f.linkedin} onChange={(e) => set('linkedin', e.target.value)} placeholder="https://linkedin.com/in/…" /></div>
+      <div className="field">
+        <label htmlFor="title">Current title <span className="sub">(optional)</span></label>
+        <input
+          id="title"
+          value={f.title}
+          onChange={(e) => set('title', e.target.value)}
+          placeholder="e.g. First Officer, Cabin Supervisor, Student pilot"
+          autoComplete="organization-title"
+        />
       </div>
       <div className="row2">
         <div className="field"><label htmlFor="phone">Phone</label><input id="phone" type="tel" value={f.phone} onChange={(e) => set('phone', e.target.value)} /></div>
@@ -24,6 +30,9 @@ export function StepProfile({ f, set, jobs }: { f: WizForm; set: S; jobs: { id: 
             {jobs.map((j) => <option key={j.id} value={j.id}>{j.title}</option>)}
           </select>
         </div>
+      </div>
+      <div className="field"><label htmlFor="linkedin">LinkedIn <span className="sub">(optional)</span></label>
+        <input id="linkedin" type="url" value={f.linkedin} onChange={(e) => set('linkedin', e.target.value)} placeholder="https://linkedin.com/in/…" />
       </div>
       <div className="field"><label htmlFor="workAuth">Right to work (UK)</label>
         <select id="workAuth" value={f.workAuth} onChange={(e) => set('workAuth', e.target.value)}>
@@ -56,7 +65,6 @@ export function StepProfile({ f, set, jobs }: { f: WizForm; set: S; jobs: { id: 
 export function StepDocs({ f, set }: { f: WizForm; set: S }) {
   const [resume, setResume] = useState<File | null>(null);
   const [cred, setCred] = useState<File | null>(null);
-  // Expose live File handles to the wizard so it can build a real FormData body.
   (f as any).__files = { resume, credential: cred };
 
   return (
