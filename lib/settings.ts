@@ -3,9 +3,6 @@ import { COMPLIANCE_FEE_CENTS, CURRENCY } from '@/lib/config';
 import { formatMoney } from '@/lib/money';
 import { recordFeeVersion } from '@/lib/fee';
 
-// Key-value settings stored so the admin can edit the compliance fee at runtime
-// for audit. Checkout still uses the frozen constant in lib/config.ts — this
-// only affects the audit trail and the number the admin sees on the dashboard.
 export type FeeSettings = { amountCents: number; label: string; currency: string };
 
 const KEY = 'compliance_fee_cents';
@@ -13,7 +10,6 @@ const memory = new Map<string, string>();
 (globalThis as any).__meridianSettings ??= memory;
 const store: Map<string, string> = (globalThis as any).__meridianSettings;
 
-// Retained for callers that still expect a label helper.
 export function labelFor(cents: number, currency: string = CURRENCY): string {
   return formatMoney(cents, currency);
 }
@@ -36,9 +32,7 @@ export async function setFee(cents: number, actor = 'admin'): Promise<FeeSetting
   if (hasDb) {
     try {
       await sql`insert into settings (key, value) values (${KEY}, ${String(clamped)})
-        on conflict (key) do update set value=excluded.value, updated_at=datetime('now')`;
-      // Audit row for every admin save. Checkout keeps using the constant, so
-      // the number a live session pays is never changed mid-funnel.
+        on conflict (key) do update set value=excluded.value, updated_at=now()`;
       await recordFeeVersion(clamped, actor);
     } catch (e) { console.error('[settings] fee save failed:', e); }
   }

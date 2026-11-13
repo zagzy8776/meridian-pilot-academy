@@ -5,7 +5,6 @@ import { PRIVACY_VERSION } from '@/lib/config';
 import { limited, ipOf } from '@/lib/ratelimit';
 
 const memory: any[] = (globalThis as any).__meridianCandidates ?? ((globalThis as any).__meridianCandidates = []);
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(req: Request) {
   const ip = ipOf(req);
@@ -16,7 +15,6 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
 
-  // Honeypot: stripped before validation so the schema stays untouched.
   const { website, ...rest } = body as any;
   if (typeof website === 'string' && website.trim() !== '') {
     return NextResponse.json({ candidateId: 'cand_bot', status: 'pending_payment' });
@@ -28,7 +26,8 @@ export async function POST(req: Request) {
   }
   const v = parsed.data;
   const email = String(v.email).trim().toLowerCase();
-  const jobId = UUID_RE.test(String(v.jobId ?? '')) ? String(v.jobId) : null;
+  const rawJob = String(v.jobId ?? '').trim();
+  const jobId = rawJob ? rawJob : null;
 
   if (!hasDb) {
     if (process.env.NODE_ENV === 'production') {
@@ -40,7 +39,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Same person retrying after a refresh should land back on their file, not fork one.
     const dup: any = await sql`select id, status from candidates where lower(email) = ${email} and status = 'pending_payment' limit 1`;
     if (dup?.[0]) return NextResponse.json({ candidateId: dup[0].id, status: dup[0].status, resumed: true });
 
@@ -49,7 +47,7 @@ export async function POST(req: Request) {
       (id, job_id, full_name, email, phone, profile, status,
        consent_identity, consent_reference, consent_retention, consent_at, consent_version, ip_hash)
       values (${id}, ${jobId}, ${v.fullName}, ${email}, ${v.phone || null}, ${JSON.stringify(v)}, 'pending_payment',
-       ${v.backgroundConsent ? 1 : 0}, ${v.referenceConsent ? 1 : 0}, ${v.retentionConsent ? 1 : 0},
+       ${!!v.backgroundConsent}, ${!!v.referenceConsent}, ${!!v.retentionConsent},
        ${new Date().toISOString()}, ${PRIVACY_VERSION}, ${ip})`;
     return NextResponse.json({ candidateId: id, status: 'pending_payment' });
   } catch (e) {
