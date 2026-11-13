@@ -13,6 +13,10 @@ export function StepProfile({ f, set, jobs }: { f: WizForm; set: S; jobs: { id: 
         <div className="field"><label htmlFor="email">Email</label><input id="email" type="email" value={f.email} onChange={(e) => set('email', e.target.value)} /></div>
       </div>
       <div className="row2">
+        <div className="field"><label htmlFor="title">Current title</label><input id="title" value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. First Officer, Cabin Supervisor" autoComplete="organization-title" /></div>
+        <div className="field"><label htmlFor="linkedin">LinkedIn (optional)</label><input id="linkedin" type="url" value={f.linkedin} onChange={(e) => set('linkedin', e.target.value)} placeholder="https://linkedin.com/in/…" /></div>
+      </div>
+      <div className="row2">
         <div className="field"><label htmlFor="phone">Phone</label><input id="phone" type="tel" value={f.phone} onChange={(e) => set('phone', e.target.value)} /></div>
         <div className="field"><label htmlFor="jobId">Programme</label>
           <select id="jobId" value={f.jobId} onChange={(e) => set('jobId', e.target.value)}>
